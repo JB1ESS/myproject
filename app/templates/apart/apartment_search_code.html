@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="container" style="padding-top: 80px;">
+  <h1 style="border-bottom: 1px solid black;">아파트 실거래가 조회</h1>
+</div>
+
+<div class="container">
+  <h5>'{{ keyword }}' 검색결과</h5>
+</div>
+
+{% if bjdList|length == 0 %}
+<div class="container" style="padding: 20px;">
+  <p>검색결과가 없습니다.</p>
+</div>
+
+{% elif bjdList|length == 1 %}
+<div class="container" style="padding: 10px;">
+  <form action="{{ url_for('apartment.search_name') }}" method="post">
+    <input type="text" name="keyword" id="keyword" value="{{ keyword }}" style="display: none;">
+    <select class="form-control input-lg" name="bjdong" id="bjdong" style="display: inline; width: auto">      
+      <option value="{{ bjdList[0] }}">{{ bjdList[0] }}</option>
+    </select>
+    <button type="submit" class="btn btn-primary" style="margin-left: 10px; width: 80px; height: 40px;">확인</button>
+  </form>
+</div>
+
+{% else %}
+<div class="container" style="padding: 10px;">
+  <form action="{{ url_for('apartment.search_name') }}" method="post">
+    <input type="text" name="keyword" id="keyword" value="{{ keyword }}" style="display: none;">
+    <select class="form-control input-lg" name="bjdong" id="bjdong" style="display: inline; width: auto">
+      {% for bjdcode in bjdList %}
+        <option value="{{ bjdcode }}">{{ bjdcode }}</option>
+      {% endfor %}
+    </select>
+    <button type="submit" class="btn btn-primary" style="margin-left: 10px; width: 80px; height: 40px;">확인</button>
+  </form>
+</div>
+{% endif %}
+
+{% endblock %}
