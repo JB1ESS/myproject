@@ -27,10 +27,10 @@ def create_app():
 #git init
 #git add --all
 #git commit -m '...'
+
 #git remote add origin https://.....
 #git push -u origin master
 
-#git remote-----------------
 #git clone https://......
 
 #aws----------------

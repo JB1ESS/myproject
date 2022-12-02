@@ -2,6 +2,7 @@ from flask import Blueprint, render_template, request
 #from ..forms import ApartSearchForm
 from ..models import BjdCode, AptDeal
 import pandas as pd
+import re
 
 bp = Blueprint('apartment', __name__, url_prefix='/apartment')
 
@@ -13,25 +14,29 @@ def input_keyword():
 def search_code():
     keyword = request.args.get("keyword")
     
-    #공공데이터포털 아파트 실거래가 데이터베이스 만들기
-    if keyword == 'makepricedb':
-        makepricedb()
-        return render_template('apart/apartment_DB.html', dbcode=1)
-
-    #makebjddb 공공데이터포털 아파트의 법정동코드 데이터베이스 만들기
-    elif keyword == 'makebjddb':
-        makebjddb()
-        return render_template('apart/apartment_DB.html', dbcode=2)
-
-    #법정동 코드리스트 보기
-    elif keyword == 'showbjdlist':
-        sidoList, bjdCodeList = showbjdlist()
-        return render_template('apart/apartment_DB.html', dbcode=3, sidoList=sidoList, bjdCodeList=bjdCodeList)
-
-    #아파트 이름 교정하기
-    elif keyword == 'namecorrection':
-        namecorrection()
-        return render_template('apart/apartment_DB.html', dbcode=4)
+    if 'admindata$' in keyword:
+        command = (keyword.split())[1]
+        #공공데이터포털 아파트 실거래가 데이터베이스 만들기
+        if command == 'makepricedb':
+            p = re.compile('20[1-2][0-9][0-1][0-9]')
+            yearmonth = (keyword.split())[2]
+            if p.match(yearmonth):
+                makepricedb(yearmonth)
+                return render_template('apart/apartment_DB.html', dbcode=1)
+            else: return render_template('apart/apartment.html')
+        #makebjddb 공공데이터포털 아파트의 법정동코드 데이터베이스 만들기
+        elif command == 'makebjddb':
+            makebjddb()
+            return render_template('apart/apartment_DB.html', dbcode=2)
+        #법정동 코드리스트 보기
+        elif command == 'showbjdlist':
+            sidoList, bjdCodeList = showbjdlist()
+            return render_template('apart/apartment_DB.html', dbcode=3, sidoList=sidoList, bjdCodeList=bjdCodeList)
+        #아파트 이름 교정하기
+        elif command == 'namecorrection':
+            namecorrection()
+            return render_template('apart/apartment_DB.html', dbcode=4)
+        else: return render_template('apart/apartment_DB.html')
 
     #아파트실거래가 검색하기
     else:
@@ -85,6 +90,9 @@ def search_result():
         return render_template('apart/apartment_search_result.html', keyword=keyword, bjdong=bjdong, aptname=aptname, area=area, buildyear=buildyear, resultList=resultList)
     return render_template('apart/apartment.html')
 
+
+
+#아파트 실거래가 불러오기--------------------------------------------------------------------------------------------------
 def loadDealprice(bjdong, aptname, area):
     #법정동 코드번호 추출
     temp = bjdong.split()
@@ -106,6 +114,7 @@ def loadDealprice(bjdong, aptname, area):
         resultList.append([o, resultdf.loc[o, 'dealyear'], resultdf.loc[o, 'dealmonth'], resultdf.loc[o, 'dealday'], resultdf.loc[o, 'floor'], resultdf.loc[o, 'price']])
     return buildyear, resultList
 
+#전용면적 체크--------------------------------------------------------------------------------
 def checkApartarea(bjdong, aptname):
     #법정동 코드번호 추출
     temp = bjdong.split()
@@ -124,6 +133,7 @@ def checkApartarea(bjdong, aptname):
     areaList.sort()
     return areaList
 
+#아파트이름 체크--------------------------------------------------------------------------------
 def checkApartname(keyword, bjdong):
     #법정동 코드번호 추출
     temp = bjdong.split()
@@ -174,7 +184,7 @@ def checkBjdcode(keyword):
     return bjdList
 
 #공공데이터포털 아파트 실거래가 데이터베이스 만들기-------------------------------------------------------
-def makepricedb():
+def makepricedb(period):
     import requests
     import xml.etree.ElementTree as ET
     import pandas as pd
@@ -182,8 +192,7 @@ def makepricedb():
 
     serviceKey = 'XS%2FfcMwMTBUQfYl8hPGTIjWgVfnZ12m6jvjMJsJQKcBXdgE1pCJc2GgcH9YJsVUYr3pSxsJGS4LVTYN8VqiESA%3D%3D'
     pageNo = '1'
-    numOfRows = '1000'
-    period = '202209'
+    numOfRows = '9999'
 
     #중복 데이터베이스 삭제
     trashlist = AptDeal.query.filter((AptDeal.dealyear == period[0:4]) & (AptDeal.dealmonth == period[4:6]))
