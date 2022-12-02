@@ -22,10 +22,18 @@ def create_app():
     return app
 
 #source activate venvs
+#. activate
 #git local------------------
 #git init
 #git add --all
 #git commit -m '...'
-#git push -u origin master
-#git remote-----------------
 #git remote add origin https://.....
+#git push -u origin master
+
+#git remote-----------------
+#git clone https://......
+
+#aws----------------
+#sudo apt-get update
+#sudo apt-get upgrade python3
+#flask run --host=0.0.0.0
