@@ -199,7 +199,7 @@ def makepricedb(period):
     for trash in trashlist:
         db.session.delete(trash)
         db.session.commit()
-        print(trash + "...삭제")
+        print(period + "데이터...삭제")
           
     aptbjd_list = BjdCode.query.all()
     bjdCodeList = []
