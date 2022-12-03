@@ -162,7 +162,7 @@ def checkApartname(keyword, bjdong):
 def checkBjdcode(keyword):
     #데이터베이스를 데이터프레임으로 가져오기
     bjdDB = BjdCode.query.filter()
-    df = pd.read_sql_query(bjdDB.statement, bjdDB.session.bind)
+    df = pd.read_sql_query(bjdDB.statement, bjdDB.session.connection())
     df['check'] = 0
     #찾고자하는 아파트명에서 두글자씩 추출해서 아파트리스트와 비교하여 두글자가 포함되면 'check'값을 1 올린다.
     for i in range(len(keyword)-1):

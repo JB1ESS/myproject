@@ -32,6 +32,7 @@ def create_app():
 #git push -u origin master
 
 #git clone https://......
+#git pull
 
 #aws----------------
 #sudo apt-get update
