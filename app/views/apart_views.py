@@ -100,7 +100,7 @@ def loadDealprice(bjdong, aptname, area):
     bjdcode = temp[1].replace(')', '')
     #데이터베이스를 데이터프레임으로 가져오기
     dealDB = AptDeal.query.filter_by(bjdcode=bjdcode, apartment=aptname)
-    df = pd.read_sql_query(dealDB.statement, dealDB.session.bind)
+    df = pd.read_sql_query(dealDB.statement, dealDB.session.connection())
     for n in range(len(df)):
         df.loc[n, 'area'] = int(float(df.loc[n, 'area']))#전용면적 소수점이하 버리기
     #찾고자하는 전용면적으로 분리하기
@@ -122,7 +122,7 @@ def checkApartarea(bjdong, aptname):
     bjdcode = temp[1].replace(')', '')
     #데이터베이스를 데이터프레임으로 가져오기
     dealDB = AptDeal.query.filter_by(bjdcode=bjdcode, apartment=aptname)
-    df = pd.read_sql_query(dealDB.statement, dealDB.session.bind)
+    df = pd.read_sql_query(dealDB.statement, dealDB.session.connection())
     df['check'] = 0
     #전용면적 리스트 만들기
     areaList = []#전용면적 목록
@@ -141,7 +141,7 @@ def checkApartname(keyword, bjdong):
     bjdcode = temp[1].replace(')', '')
     #데이터베이스를 데이터프레임으로 가져오기
     dealDB = AptDeal.query.filter_by(bjdcode=bjdcode)
-    df = pd.read_sql_query(dealDB.statement, dealDB.session.bind)
+    df = pd.read_sql_query(dealDB.statement, dealDB.session.connection())
     df['check'] = 0
     #찾고자하는 아파트명에서 두글자씩 추출해서 아파트리스트와 비교하여 두글자가 포함되면 'check'값을 1 올린다.
     for i in range(len(keyword)-1):
