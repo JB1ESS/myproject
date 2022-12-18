@@ -36,6 +36,13 @@ def search_code():
         elif command == 'namecorrection':
             namecorrection()
             return render_template('apart/apartment_DB.html', dbcode=4)
+        elif command == 'delpricedb':
+            p = re.compile('20[1-2][0-9][0-1][0-9]')
+            yearmonth = (keyword.split())[2]
+            if p.match(yearmonth):
+                delpricedb(yearmonth)
+                return render_template('apart/apartment_DB.html', dbcode=1)
+            else: return render_template('apart/apartment.html')
         else: return render_template('apart/apartment_DB.html')
 
     #아파트실거래가 검색하기
@@ -341,3 +348,11 @@ def namecorrection():
             db.session.commit()
             print(correctionbjdcodeitem.apartment)
     print('법정동코드 데이터베이스 아파트이름 수정완료')
+
+def delpricedb(period):
+    from .. import db
+    trashlist = AptDeal.query.filter((AptDeal.dealyear == period[0:4]) & (AptDeal.dealmonth == period[4:6]))
+    for trash in trashlist:
+        db.session.delete(trash)
+        db.session.commit()
+        print(period + "데이터...삭제")
