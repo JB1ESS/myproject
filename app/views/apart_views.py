@@ -202,7 +202,7 @@ def makepricedb(period):
     numOfRows = '9999'
 
     #중복 데이터베이스 삭제
-    trashlist = AptDeal.query.filter((AptDeal.dealyear == period[0:4]) & (AptDeal.dealmonth == period[4:6]))
+    trashlist = AptDeal.query.filter((AptDeal.dealyear == period[0:4]) and (AptDeal.dealmonth == period[4:6]))
     for trash in trashlist:
         db.session.delete(trash)
         db.session.commit()
@@ -351,7 +351,7 @@ def namecorrection():
 
 def delpricedb(period):
     from .. import db
-    trashlist = AptDeal.query.filter((AptDeal.dealyear == period[0:4]) & (AptDeal.dealmonth == period[4:6]))
+    trashlist = AptDeal.query.filter((AptDeal.dealyear == period[0:4]) and (AptDeal.dealmonth == period[4:6]))
     for trash in trashlist:
         db.session.delete(trash)
         db.session.commit()
