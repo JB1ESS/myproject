@@ -41,7 +41,7 @@ def search_code():
             yearmonth = (keyword.split())[2]
             if p.match(yearmonth):
                 delpricedb(yearmonth)
-                return render_template('apart/apartment_DB.html', dbcode=1)
+                return render_template('apart/apartment_DB.html', dbcode=5)
             else: return render_template('apart/apartment.html')
         else: return render_template('apart/apartment_DB.html')
 
