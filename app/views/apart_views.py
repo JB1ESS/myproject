@@ -67,6 +67,7 @@ def search_code():
     '''
 
     #배포용 코드
+    
     if '이편한' in keyword:
         keyword = keyword.replace('이편한', '이편한세상')
     
@@ -82,6 +83,7 @@ def search_code():
             return render_template('apart/apartment_search_area.html', keyword=keyword, bjdong=bjdong, aptname=aptname, areaList=areaList)
         return render_template('apart/apartment_search_name.html', keyword=keyword, bjdong=bjdong, aptList=aptList)
     return render_template('apart/apartment_search_code.html', keyword=keyword, bjdList=bjdList)
+    
 
 @bp.route('/search_name/', methods=('GET', 'POST'))
 def search_name():
@@ -130,11 +132,14 @@ def loadDealprice(bjdong, aptname, area):
     df = pd.read_sql_query(dealDB.statement, dealDB.session.connection())
     for n in range(len(df)):
         df.loc[n, 'area'] = int(float(df.loc[n, 'area']))#전용면적 소수점이하 버리기
+        df.loc[n, 'dealday'] = int(df.loc[n, 'dealday'])
+        df.loc[n, 'dealmonth'] = int(df.loc[n, 'dealmonth'])
+        df.loc[n, 'dealyear'] = int(df.loc[n, 'dealyear'])
     #찾고자하는 전용면적으로 분리하기
     resultdf = df[df['area'] == int(area)]
-    resultdf.sort_values(by=['dealyear','dealmonth', 'dealday'])
+    resultdf = resultdf.sort_values(by=['dealyear','dealmonth','dealday'], ascending=False)
     resultdf = resultdf.reset_index(drop=True)#index초기화
-    #print(resultdf)
+    print(resultdf)
     resultList=[]
     buildyear = df.loc[0, 'buildyear']
     for o in range(len(resultdf)):
@@ -210,6 +215,7 @@ def checkBjdcode(keyword):
     bjdList.sort()
     return bjdList
 
+#관리용 코드
 '''
 #공공데이터포털 아파트 실거래가 데이터베이스 만들기-------------------------------------------------------
 def makepricedb(period):
