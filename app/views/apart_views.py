@@ -13,7 +13,8 @@ def input_keyword():
 @bp.route('/search_code/')
 def search_code():
     keyword = request.args.get("keyword")
-    
+    #관리용 코드
+    '''
     if 'admindata$' in keyword:
         command = (keyword.split())[1]
         #공공데이터포털 아파트 실거래가 데이터베이스 만들기
@@ -51,27 +52,48 @@ def search_code():
             keyword = keyword.replace('이편한', '이편한세상')
         
         bjdList = checkBjdcode(keyword)
-        print(bjdList)
+        #print(bjdList)
         if len(bjdList) == 1:
             bjdong = bjdList[0]
-            aptList = checkApartname(keyword, bjdong)
-            print(aptList)
+            global firstdf
+            firstdf, aptList = checkApartname(keyword, bjdong)
             if len(aptList) == 1:
                 aptname = aptList[0]
-                areaList = checkApartarea(bjdong, aptname)
+                global seconddf
+                areaList, seconddf = checkApartarea(aptname, firstdf)
                 return render_template('apart/apartment_search_area.html', keyword=keyword, bjdong=bjdong, aptname=aptname, areaList=areaList)
             return render_template('apart/apartment_search_name.html', keyword=keyword, bjdong=bjdong, aptList=aptList)
         return render_template('apart/apartment_search_code.html', keyword=keyword, bjdList=bjdList)
+    '''
+
+    #배포용 코드
+    if '이편한' in keyword:
+        keyword = keyword.replace('이편한', '이편한세상')
+        
+    bjdList = checkBjdcode(keyword)
+    #print(bjdList)
+    if len(bjdList) == 1:
+        bjdong = bjdList[0]
+        global firstdf
+        firstdf, aptList = checkApartname(keyword, bjdong)
+        if len(aptList) == 1:
+            aptname = aptList[0]
+            global seconddf
+            areaList, seconddf = checkApartarea(aptname, firstdf)
+            return render_template('apart/apartment_search_area.html', keyword=keyword, bjdong=bjdong, aptname=aptname, areaList=areaList)
+        return render_template('apart/apartment_search_name.html', keyword=keyword, bjdong=bjdong, aptList=aptList)
 
 @bp.route('/search_name/', methods=('GET', 'POST'))
 def search_name():
     if request.method == 'POST':
         keyword = request.form["keyword"]
         bjdong = request.form["bjdong"]
-        aptList = checkApartname(keyword, bjdong)
+        global firstdf
+        firstdf, aptList = checkApartname(keyword, bjdong)
         if len(aptList) == 1:
             aptname = aptList[0]
-            areaList = checkApartarea(bjdong, aptname)
+            global seconddf
+            areaList, seconddf = checkApartarea(aptname, firstdf)
             return render_template('apart/apartment_search_area.html', keyword=keyword, bjdong=bjdong, aptname=aptname, areaList=areaList)
         return render_template('apart/apartment_search_name.html', keyword=keyword, bjdong=bjdong, aptList=aptList)
     return render_template('apart/apartment.html')
@@ -82,7 +104,8 @@ def search_area():
         keyword = request.form["keyword"]
         bjdong = request.form["bjdong"]
         aptname = request.form["aptname"]
-        areaList = checkApartarea(bjdong, aptname)
+        global seconddf
+        areaList, seconddf = checkApartarea(aptname, firstdf)
         return render_template('apart/apartment_search_area.html', keyword=keyword, bjdong=bjdong, aptname=aptname, areaList=areaList)
     return render_template('apart/apartment.html')
 
@@ -93,28 +116,18 @@ def search_result():
         bjdong = request.form["bjdong"]
         aptname = request.form["aptname"]
         area = request.form["area"]
-        buildyear, resultList = loadDealprice(bjdong, aptname, area)
+        buildyear, resultList = loadDealprice(area, seconddf)
         return render_template('apart/apartment_search_result.html', keyword=keyword, bjdong=bjdong, aptname=aptname, area=area, buildyear=buildyear, resultList=resultList)
     return render_template('apart/apartment.html')
 
 
 
 #아파트 실거래가 불러오기--------------------------------------------------------------------------------------------------
-def loadDealprice(bjdong, aptname, area):
-    #법정동 코드번호 추출
-    temp = bjdong.split()
-    temp[1] = temp[1].replace('(', '')
-    bjdcode = temp[1].replace(')', '')
-    #데이터베이스를 데이터프레임으로 가져오기
-    dealDB = AptDeal.query.filter_by(bjdcode=bjdcode, apartment=aptname)
-    df = pd.read_sql_query(dealDB.statement, dealDB.session.connection())
-    for n in range(len(df)):
-        df.loc[n, 'area'] = int(float(df.loc[n, 'area']))#전용면적 소수점이하 버리기
+def loadDealprice(area, df):
     #찾고자하는 전용면적으로 분리하기
     resultdf = df[df['area'] == int(area)]
     resultdf.sort_values(by=['dealyear','dealmonth', 'dealday'])
     resultdf = resultdf.reset_index(drop=True)#index초기화
-    #print(resultdf)
     resultList=[]
     buildyear = df.loc[0, 'buildyear']
     for o in range(len(resultdf)):
@@ -122,23 +135,17 @@ def loadDealprice(bjdong, aptname, area):
     return buildyear, resultList
 
 #전용면적 체크--------------------------------------------------------------------------------
-def checkApartarea(bjdong, aptname):
-    #법정동 코드번호 추출
-    temp = bjdong.split()
-    temp[1] = temp[1].replace('(', '')
-    bjdcode = temp[1].replace(')', '')
-    #데이터베이스를 데이터프레임으로 가져오기
-    dealDB = AptDeal.query.filter_by(bjdcode=bjdcode, apartment=aptname)
-    df = pd.read_sql_query(dealDB.statement, dealDB.session.connection())
-    df['check'] = 0
+def checkApartarea(aptname, df):
+    resultdf = df[df['apartment'] == aptname]
+    resultdf = resultdf.reset_index(drop=True)
     #전용면적 리스트 만들기
-    areaList = []#전용면적 목록
-    for m in range(len(df)):
-        df.loc[m, 'area'] = int(float(df.loc[m, 'area']))#전용면적 소수점이하 버리기
-        areaList.append(df.loc[m, 'area'])
+    for m in range(len(resultdf)):
+        resultdf.loc[m, 'area'] = int(float(resultdf.loc[m, 'area']))#전용면적 소수점이하 버리기
+    areaList = resultdf.area.to_list()
     areaList = list(set(areaList))
-    areaList.sort()
-    return areaList
+    #print(resultdf)
+    #print(areaList)
+    return areaList, resultdf
 
 #아파트이름 체크--------------------------------------------------------------------------------
 def checkApartname(keyword, bjdong):
@@ -157,13 +164,14 @@ def checkApartname(keyword, bjdong):
             if a1 in (str(df.loc[j,'bjdong']) + str(df.loc[j,'apartment'])):
                 df.loc[j,'check'] += 1
     
-    aptList = []#'check'값이 가장 높은 가장높은 아파트를 뽑는다.
-    for k in range(len(df)):
-        if df.loc[k,'check'] == df['check'].max():
-            aptList.append(df.loc[k,'apartment'])
+    #'check'값이 가장 높은 가장높은 아파트를 뽑는다.
+    resultdf = df[df['check'] == int(df['check'].max())]
+    resultdf = resultdf.reset_index(drop=True)
+    aptList = resultdf.apartment.to_list()
     aptList = list(set(aptList))
-    aptList.sort()
-    return aptList
+    #print(resultdf)
+    #print(aptList)
+    return resultdf, aptList
 
 #법정동코드 찾기------------------------------------------------------------------------------------------------------------
 def checkBjdcode(keyword):
@@ -190,6 +198,8 @@ def checkBjdcode(keyword):
     bjdList.sort()
     return bjdList
 
+#관리용 코드
+'''
 #공공데이터포털 아파트 실거래가 데이터베이스 만들기-------------------------------------------------------
 def makepricedb(period):
     import requests
@@ -286,7 +296,7 @@ def makebjddb():
 
     #XML parsing data를 dataframe으로 변환 DB만들기
     df = pd.DataFrame(data=apartList)
-    print(df)
+    #print(df)
     for i in range(len(df)):
         aptbjd = BjdCode(si=df.loc[i,'as1'], gu=df.loc[i,'as2'], dong=df.loc[i,'as3'], bjdcode=df.loc[i,'bjdCode'], apartment=df.loc[i,'kaptName'])
         db.session.add(aptbjd)
@@ -359,3 +369,4 @@ def delpricedb(period):
         db.session.delete(trash)
         db.session.commit()
         print(period + "데이터...삭제")
+'''
