@@ -82,7 +82,8 @@ def search_code():
             areaList, seconddf = checkApartarea(aptname, firstdf)
             return render_template('apart/apartment_search_area.html', keyword=keyword, bjdong=bjdong, aptname=aptname, areaList=areaList)
         return render_template('apart/apartment_search_name.html', keyword=keyword, bjdong=bjdong, aptList=aptList)
-
+    return render_template('apart/apartment_search_code.html', keyword=keyword, bjdList=bjdList)
+    
 @bp.route('/search_name/', methods=('GET', 'POST'))
 def search_name():
     if request.method == 'POST':
