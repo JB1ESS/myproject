@@ -15,7 +15,7 @@ def search_code():
     keyword = request.args.get("keyword")
     
     #관리용 코드
-    '''
+    
     if 'admindata$' in keyword:
         command = (keyword.split())[1]
         #공공데이터포털 아파트 실거래가 데이터베이스 만들기
@@ -64,10 +64,10 @@ def search_code():
                 return render_template('apart/apartment_search_area.html', keyword=keyword, bjdong=bjdong, aptname=aptname, areaList=areaList)
             return render_template('apart/apartment_search_name.html', keyword=keyword, bjdong=bjdong, aptList=aptList)
         return render_template('apart/apartment_search_code.html', keyword=keyword, bjdList=bjdList)
-    '''
+    
 
     #배포용 코드
-    
+    '''
     if '이편한' in keyword:
         keyword = keyword.replace('이편한', '이편한세상')
     
@@ -83,7 +83,7 @@ def search_code():
             return render_template('apart/apartment_search_area.html', keyword=keyword, bjdong=bjdong, aptname=aptname, areaList=areaList)
         return render_template('apart/apartment_search_name.html', keyword=keyword, bjdong=bjdong, aptList=aptList)
     return render_template('apart/apartment_search_code.html', keyword=keyword, bjdList=bjdList)
-    
+    '''
 
 @bp.route('/search_name/', methods=('GET', 'POST'))
 def search_name():
@@ -216,21 +216,22 @@ def checkBjdcode(keyword):
     return bjdList
 
 #관리용 코드
-'''
+
 #공공데이터포털 아파트 실거래가 데이터베이스 만들기-------------------------------------------------------
 def makepricedb(period):
     import requests
     import xml.etree.ElementTree as ET
     import pandas as pd
-    from ..... import db
+    from .. import db
 
     serviceKey = 'XS%2FfcMwMTBUQfYl8hPGTIjWgVfnZ12m6jvjMJsJQKcBXdgE1pCJc2GgcH9YJsVUYr3pSxsJGS4LVTYN8VqiESA%3D%3D'
     pageNo = '1'
     numOfRows = '9999'
 
     #중복 데이터베이스 삭제
-    trashlist = AptDeal.query.filter((AptDeal.dealyear == period[0:4]) & (AptDeal.dealmonth == period[4:6]))
+    trashlist = AptDeal.query.filter((AptDeal.dealyear == int(period[0:4])) & (AptDeal.dealmonth == int(period[4:6])))
     for trash in trashlist:
+        print(trash)
         db.session.delete(trash)
         db.session.commit()
         print(period + "데이터...삭제")
@@ -284,7 +285,7 @@ def makebjddb():
     import requests
     import xml.etree.ElementTree as ET
     import pandas as pd
-    from ..... import db
+    from .. import db
 
     #공공데이터포털 Request Parameters
     serviceKey = 'XS%2FfcMwMTBUQfYl8hPGTIjWgVfnZ12m6jvjMJsJQKcBXdgE1pCJc2GgcH9YJsVUYr3pSxsJGS4LVTYN8VqiESA%3D%3D'
@@ -355,7 +356,7 @@ def showbjdlist():
 
 #데이터베이스의 아파트 이름 교정하기----------------------------------------------------------------
 def namecorrection():
-    from ..... import db
+    from .. import db
 
     correctionbefore = ['e편한','e-편한','E-편한','LEADERS','Leaders','SoulLeader','TheFirst','Winnervill','We’vePark','FIRSTVIEW','VIEW','View','CASTLE', 'Castle','Sky 뷰','Palace','PALACE','HIPARK','I-PARK','I-Park','IPARK',"I'PARK",'HILLS','Hills','TOPCLASS','TOP-Class']
     correctionafter  = ['이편한','이편한','이편한', '리더스',   '리더스'   '소울리더',    '더퍼스트',  '위너스빌',     '위브파크',   '퍼스트뷰',   '뷰',   '뷰',   '캐슬',    '캐슬',   '스카이뷰','팰리스', '팰리스',  '하이파크','아이파크','아이파크','아이파크','아이파크','힐스',  '힐스',   '탑클래스',  '탑클래스']
@@ -377,8 +378,8 @@ def namecorrection():
     print('법정동코드 데이터베이스 아파트이름 수정완료')
 
 def delpricedb(period):
-    from ..... import db
-    trashlist = AptDeal.query.filter((AptDeal.dealyear == period[0:4]) & (AptDeal.dealmonth == period[4:6]))
+    from .. import db
+    trashlist = AptDeal.query.filter((AptDeal.dealyear == int(period[0:4])) & (AptDeal.dealmonth == int(period[4:6])))
     #df = pd.read_sql_query(trashlist.statement, trashlist.session.connection())
     #print(period)
     #print(df)
@@ -386,4 +387,3 @@ def delpricedb(period):
         db.session.delete(trash)
         db.session.commit()
         print(period + "데이터...삭제")
-'''
